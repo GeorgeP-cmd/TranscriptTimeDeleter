@@ -34,13 +34,31 @@ def main():
         return
     result = remove_timestamps(raw)
     print("\n--- Cleaned transcript ---\n")
-    print(result)
+    for i, chunk in enumerate(split_output(result), start=1):
+        print(f"\n--- Section {i} ---\n")
+        print(chunk)
     if CLIP:
         try:
             pyperclip.copy(result)
             print("\n[Cleaned transcript copied to clipboard]")
         except Exception:
             pass
+
+def split_output(text: str, max_length: int = 10240):
+    paragraphs = text.split('\n')
+    current_chunk = []
+    current_length = 0
+    for para in paragraphs:
+        para_length = len(para) + 1  # +1 for the newline
+        if current_length + para_length > max_length:
+            yield '\n'.join(current_chunk).strip()
+            current_chunk = [para]
+            current_length = para_length
+        else:
+            current_chunk.append(para)
+            current_length += para_length
+    if current_chunk:
+        yield '\n'.join(current_chunk).strip()
 
 if __name__ == "__main__":
     main()
